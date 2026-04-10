@@ -11,7 +11,7 @@ import '../App.css';
 export default function DashboardPage() {
   const { tasks, loading, createTask, updateTask, deleteTask, moveTask, fetchTasks } = useTasks();
 
-  const [modal, setModal] = useState(null); // null | { mode: 'create' | 'edit', task?: {} }
+  const [modal, setModal] = useState(null);
   const [saving, setSaving] = useState(false);
   const [filters, setFilters] = useState({ search: '', status: '' });
 
