@@ -9,10 +9,23 @@ import morgan from 'morgan';
 import connectDB from './src/core/DB/connectDb.js';
 import authRoutes from './src/routes/auth.routes.js';
 import taskRoutes from './src/routes/task.routes.js';
-
-dotenv.config();
+import registerTaskSockets from './src/sockets/task.socket.js';
+import { Server } from "socket.io";
+import http from "http";
+dotenv.config()
 
 const app = express();
+const httpServer = http.createServer(app);
+
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.CLIENT_URL,
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+  pingTimeout: 60000,
+  pingInterval: 25000,
+});
 
 const allowedOrigins = [
   'http://localhost:5173',
@@ -27,8 +40,8 @@ app.use(cors({
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization'],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 app.use(helmet({
@@ -49,6 +62,10 @@ app.use(hpp());
 app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 app.set('trust proxy', 1);
+
+app.set('io', io);
+
+registerTaskSockets(io);
 
 app.get('/', (_req, res) => {
   res.json({
