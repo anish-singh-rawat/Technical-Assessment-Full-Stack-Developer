@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const TASK_STATUSES = ['todo', 'in-progress', 'done'];
 
@@ -46,4 +46,4 @@ taskSchema.index({ title: 'text', description: 'text' });
 
 const Task = mongoose.model('Task', taskSchema);
 
-module.exports = Task;
+export default Task;

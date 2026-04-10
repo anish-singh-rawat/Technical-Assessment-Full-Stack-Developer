@@ -1,9 +1,8 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/user.model');
-const { JWT_SECRET } = require('../config/env');
+import jwt from 'jsonwebtoken';
+import User from '../../models/user.model.js';
 
 const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
 };
 
 const AuthService = {
@@ -59,4 +58,4 @@ const AuthService = {
   },
 };
 
-module.exports = AuthService;
+export default AuthService;
