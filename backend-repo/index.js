@@ -39,49 +39,50 @@ app.use(helmet({
   },
 }));
 
-app.use(compression()); 
+app.use(compression());
 app.use(morgan('combined'));
-app.use(hpp()); 
-app.use(express.json({ limit: '10mb' })); 
+app.use(hpp());
+app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser())
 app.set('trust proxy', 1);
 
 try {
-    app.get("/", (req, res) => {
-        res.json({
-            message: "Full stack developer task server is running on port " + (process.env.PORT || 8080),
-            error: false,
-            success: true,
-        })
+  app.get("/", (req, res) => {
+    res.json({
+      message: "Full stack developer task server is running on port " + (process.env.PORT || 8080),
+      error: false,
+      success: true,
     })
+  })
 
-    // LOCATION ROUTES (New unified structure)
-    // app.use('/api/location', locationRouter);
-    
+  app.use('/api/auth', authRoutes);
+  app.use('/api/tasks', taskRoutes);
+
+
 } catch (error) {
-    console.error("Error occurred:", error);
-    res.status(500).json({
-        message: "Internal Server Error",
-        error: true,
-        success: false,
-        server: "lens-manufacturing-erp",
-        serverError: error.message || error
-    });
+  console.error("Error occurred:", error);
+  res.status(500).json({
+    message: "Internal Server Error",
+    error: true,
+    success: false,
+    server: "lens-manufacturing-erp",
+    serverError: error.message || error
+  });
 }
 
 app.use((err, req, res, next) => {
-    console.error('Unhandled error:', err);
-    const status = err?.status || 500;
-    res.status(status).json({
-        message: err?.message || 'Internal Server Error',
-        error: true,
-        success: false,
-        ...(process.env.NODE_ENV === 'development' ? { stack: err.stack } : {})
-    });
+  console.error('Unhandled error:', err);
+  const status = err?.status || 500;
+  res.status(status).json({
+    message: err?.message || 'Internal Server Error',
+    error: true,
+    success: false,
+    ...(process.env.NODE_ENV === 'development' ? { stack: err.stack } : {})
+  });
 });
 
 app.listen(process.env.PORT || 8080, () => {
-    console.log(`Server is running http://localhost:${process.env.PORT || 8080}`);
+  console.log(`Server is running http://localhost:${process.env.PORT || 8080}`);
 });
 
 
