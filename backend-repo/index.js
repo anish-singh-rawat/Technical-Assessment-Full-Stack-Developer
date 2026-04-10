@@ -13,6 +13,7 @@ import connectDB from './src/core/DB/connectDb.js';
 import authRoutes from './src/routes/auth.routes.js';
 import taskRoutes from './src/routes/task.routes.js';
 import registerTaskSockets from './src/sockets/task.socket.js';
+import { apiLimiter } from './src/core/middlewares/rateLimiter.js';
 
 dotenv.config();
 
@@ -71,7 +72,7 @@ app.get('/', (_req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
-app.use('/api/tasks', taskRoutes);
+app.use('/api/tasks', apiLimiter, taskRoutes);
 
 app.use((err, _req, res, _next) => {
   console.error(err);
