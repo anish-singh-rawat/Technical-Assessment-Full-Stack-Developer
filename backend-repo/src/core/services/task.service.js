@@ -1,16 +1,24 @@
 import Task from '../../models/task.model.js';
+import cache from '../../utils/cache.js';
+
+const CACHE_TTL = 120; 
+
+const taskCacheKey = (userId, search = '', status = '') => `tasks:${userId}:${status}:${search}`;
 
 const TaskService = {
-  async getAllTasks({ search, status, userId } = {}) {
-    const query = {};
+  async getAllTasks({ search = '', status = '', userId } = {}) {
+    const key = taskCacheKey(userId, search, status);
+    const cached = cache.get(key);
+    if (cached) return cached;
 
+    const query = {};
     if (userId) query.createdBy = userId;
 
     if (status && ['todo', 'in-progress', 'done'].includes(status)) {
       query.status = status;
     }
 
-    if (search && search.trim()) {
+    if (search.trim()) {
       query.$or = [
         { title: { $regex: search.trim(), $options: 'i' } },
         { description: { $regex: search.trim(), $options: 'i' } },
@@ -21,6 +29,7 @@ const TaskService = {
       .populate('createdBy', 'name email')
       .sort({ order: 1, createdAt: -1 });
 
+    cache.set(key, tasks, CACHE_TTL);
     return tasks;
   },
 
@@ -39,6 +48,8 @@ const TaskService = {
     });
 
     await task.populate('createdBy', 'name email');
+
+    cache.delByPrefix(`tasks:${createdBy}`);
     return task;
   },
 
@@ -72,6 +83,7 @@ const TaskService = {
     await existingTask.save();
     await existingTask.populate('createdBy', 'name email');
 
+    cache.delByPrefix(`tasks:${existingTask.createdBy._id}`);
     return existingTask;
   },
 
@@ -89,6 +101,8 @@ const TaskService = {
     }
 
     await Task.findByIdAndDelete(taskId);
+
+    cache.delByPrefix(`tasks:${task.createdBy}`);
     return task;
   },
 
