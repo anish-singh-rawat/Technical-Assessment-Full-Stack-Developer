@@ -60,8 +60,8 @@ export const AuthProvider = ({ children }) => {
     validateToken();
   }, []); 
 
-  const register = useCallback(async ({ name, email, password }) => {
-    const { data } = await authApi.register({ name, email, password });
+  const register = useCallback(async ({ name, email, password, role }) => {
+    const { data } = await authApi.register({ name, email, password, role });
     setAuth(data.data);
     return data.data;
   }, [setAuth]);
