@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import hpp from 'hpp';
 import compression from 'compression';
 import morgan from 'morgan';
+import connectDB from './src/core/DB/connectDb.js';
 dotenv.config();
 
 const app = express();
@@ -82,3 +83,10 @@ app.use((err, req, res, next) => {
 app.listen(process.env.PORT || 8080, () => {
     console.log(`Server is running http://localhost:${process.env.PORT || 8080}`);
 });
+
+
+connectDB()
+  .then(() => {
+    console.log("DB Connected");
+  })
+  .catch(err => console.error("DB Failed:", err));
