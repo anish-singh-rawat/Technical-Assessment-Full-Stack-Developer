@@ -1,5 +1,5 @@
-const AuthService = require('../services/auth.service');
-const ApiResponse = require('../utils/apiResponse');
+import AuthService from '../services/auth.service.js';
+import ApiResponse from '../../utils/apiResponse.js';
 
 const AuthController = {
   async register(req, res, next) {
@@ -44,4 +44,4 @@ const AuthController = {
   },
 };
 
-module.exports = AuthController;
+export default AuthController;

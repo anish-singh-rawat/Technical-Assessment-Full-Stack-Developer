@@ -1,18 +1,22 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import cookieParser from 'cookie-parser'
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import hpp from 'hpp';
 import compression from 'compression';
 import morgan from 'morgan';
 import connectDB from './src/core/DB/connectDb.js';
+import authRoutes from './src/routes/auth.routes.js';
+import taskRoutes from './src/routes/task.routes.js';
+
 dotenv.config();
 
 const app = express();
+
 const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:5174",
+  'http://localhost:5173',
+  'http://localhost:5174',
 ];
 
 app.use(cors({
@@ -23,8 +27,8 @@ app.use(cors({
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"],
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 }));
 
 app.use(helmet({
@@ -34,7 +38,7 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
+      imgSrc: ["'self'", 'data:', 'https:'],
     },
   },
 }));
@@ -43,51 +47,38 @@ app.use(compression());
 app.use(morgan('combined'));
 app.use(hpp());
 app.use(express.json({ limit: '10mb' }));
-app.use(cookieParser())
+app.use(cookieParser());
 app.set('trust proxy', 1);
 
-try {
-  app.get("/", (req, res) => {
-    res.json({
-      message: "Full stack developer task server is running on port " + (process.env.PORT || 8080),
-      error: false,
-      success: true,
-    })
-  })
-
-  app.use('/api/auth', authRoutes);
-  app.use('/api/tasks', taskRoutes);
-
-
-} catch (error) {
-  console.error("Error occurred:", error);
-  res.status(500).json({
-    message: "Internal Server Error",
-    error: true,
-    success: false,
-    server: "lens-manufacturing-erp",
-    serverError: error.message || error
+app.get('/', (_req, res) => {
+  res.json({
+    message: `Server is running on port ${process.env.PORT || 8080}`,
+    error: false,
+    success: true,
   });
-}
+});
 
-app.use((err, req, res, next) => {
+app.use('/api/auth', authRoutes);
+app.use('/api/tasks', taskRoutes);
+
+app.use((err, _req, res, _next) => {
   console.error('Unhandled error:', err);
-  const status = err?.status || 500;
+  const status = err?.statusCode || err?.status || 500;
   res.status(status).json({
     message: err?.message || 'Internal Server Error',
     error: true,
     success: false,
-    ...(process.env.NODE_ENV === 'development' ? { stack: err.stack } : {})
+    ...(process.env.NODE_ENV === 'development' ? { stack: err.stack } : {}),
   });
 });
 
-app.listen(process.env.PORT || 8080, () => {
-  console.log(`Server is running http://localhost:${process.env.PORT || 8080}`);
-});
-
-
 connectDB()
   .then(() => {
-    console.log("DB Connected");
+    app.listen(process.env.PORT || 8080, () => {
+      console.log(`Server is running http://localhost:${process.env.PORT || 8080}`);
+    });
   })
-  .catch(err => console.error("DB Failed:", err));
+  .catch((err) => {
+    console.error('DB connection failed:', err);
+    process.exit(1);
+  });

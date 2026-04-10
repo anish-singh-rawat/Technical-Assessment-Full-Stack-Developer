@@ -1,3 +1,5 @@
+import TaskService from '../services/task.service.js';
+import ApiResponse from '../../utils/apiResponse.js';
 
 const TaskController = {
   async getAllTasks(req, res, next) {
@@ -72,4 +74,4 @@ const TaskController = {
   },
 };
 
-module.exports = TaskController;
+export default TaskController;

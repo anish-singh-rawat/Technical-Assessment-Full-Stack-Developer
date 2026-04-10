@@ -1,12 +1,10 @@
-const Task = require('../models/task.model');
+import Task from '../../models/task.model.js';
 
 const TaskService = {
   async getAllTasks({ search, status, userId } = {}) {
     const query = {};
 
-    if (userId) {
-      query.createdBy = userId;
-    }
+    if (userId) query.createdBy = userId;
 
     if (status && ['todo', 'in-progress', 'done'].includes(status)) {
       query.status = status;
@@ -68,9 +66,7 @@ const TaskService = {
 
     const allowedFields = ['title', 'description', 'status', 'order'];
     allowedFields.forEach((field) => {
-      if (updateData[field] !== undefined) {
-        existingTask[field] = updateData[field];
-      }
+      if (updateData[field] !== undefined) existingTask[field] = updateData[field];
     });
 
     await existingTask.save();
@@ -82,7 +78,6 @@ const TaskService = {
   async moveTask(taskId, newStatus, incomingUpdatedAt) {
     return TaskService.updateTask(taskId, { status: newStatus }, incomingUpdatedAt);
   },
-
 
   async deleteTask(taskId) {
     const task = await Task.findById(taskId);
@@ -110,4 +105,4 @@ const TaskService = {
   },
 };
 
-module.exports = TaskService;
+export default TaskService;
