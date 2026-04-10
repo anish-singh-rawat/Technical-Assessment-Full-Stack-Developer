@@ -6,19 +6,19 @@ export const register = async (req, res, next) => {
     const { name, email, password, role } = req.body;
 
     if (!name || !email || !password) {
-      return ApiResponse.badRequest(res, 'Name, email, and password are required');
+      return ApiResponse.badRequest(res, 'Name, email and password are required');
     }
 
     if (role && !['customer', 'admin'].includes(role)) {
-      return ApiResponse.badRequest(res, 'Role must be either customer or admin');
+      return ApiResponse.badRequest(res, 'Role must be customer or admin');
     }
 
     const result = await AuthService.register({ name, email, password, role });
-    return ApiResponse.created(res, result, 'Registration successful');
-  } catch (error) {
-    next(error);
+    return ApiResponse.created(res, result, 'Registered successfully');
+  } catch (err) {
+    next(err);
   }
-}
+};
 
 export const login = async (req, res, next) => {
   try {
@@ -29,21 +29,13 @@ export const login = async (req, res, next) => {
     }
 
     const result = await AuthService.login({ email, password });
-    return ApiResponse.success(res, result, 'Login successful');
-  } catch (error) {
-    next(error);
+    return ApiResponse.success(res, result, 'Logged in successfully');
+  } catch (err) {
+    next(err);
   }
-}
+};
 
 export const getMe = async (req, res) => {
-  return ApiResponse.success(res, {
-    user: {
-      id: req.user._id,
-      name: req.user.name,
-      email: req.user.email,
-      role: req.user.role,
-      createdAt: req.user.createdAt,
-    },
-  }, 'User profile fetched');
-}
-
+  const { _id, name, email, role, createdAt } = req.user;
+  return ApiResponse.success(res, { user: { id: _id, name, email, role, createdAt } }, 'Profile fetched');
+};
