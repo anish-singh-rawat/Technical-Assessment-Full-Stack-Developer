@@ -6,7 +6,7 @@ const generateToken = (userId) => {
 };
 
 const AuthService = {
-  async register({ name, email, password }) {
+  async register({ name, email, password, role }) {
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
       const err = new Error('Email is already registered');
@@ -14,7 +14,7 @@ const AuthService = {
       throw err;
     }
 
-    const user = await User.create({ name, email, password });
+    const user = await User.create({ name, email, password, role });
     const token = generateToken(user._id);
 
     return {
@@ -23,6 +23,7 @@ const AuthService = {
         id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role,
         createdAt: user.createdAt,
       },
     };
@@ -52,6 +53,7 @@ const AuthService = {
         id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role,
         createdAt: user.createdAt,
       },
     };

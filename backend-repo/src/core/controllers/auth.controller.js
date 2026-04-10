@@ -3,13 +3,17 @@ import ApiResponse from '../../utils/apiResponse.js';
 
 export const register = async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
     if (!name || !email || !password) {
       return ApiResponse.badRequest(res, 'Name, email, and password are required');
     }
 
-    const result = await AuthService.register({ name, email, password });
+    if (role && !['customer', 'admin'].includes(role)) {
+      return ApiResponse.badRequest(res, 'Role must be either customer or admin');
+    }
+
+    const result = await AuthService.register({ name, email, password, role });
     return ApiResponse.created(res, result, 'Registration successful');
   } catch (error) {
     next(error);
@@ -37,6 +41,7 @@ export const getMe = async (req, res) => {
       id: req.user._id,
       name: req.user.name,
       email: req.user.email,
+      role: req.user.role,
       createdAt: req.user.createdAt,
     },
   }, 'User profile fetched');
