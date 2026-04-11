@@ -2,6 +2,17 @@ import jwt from 'jsonwebtoken';
 import User from '../models/user.model.js';
 import TaskService from '../core/services/task.service.js';
 
+
+const emitToOwnerAndAdmins = (io, event, payload, ownerUserId) => {
+  const ownerRoom = `user:${String(ownerUserId)}`;
+  io.to(ownerRoom).emit(event, payload);
+  io.sockets.sockets.forEach((socket) => {
+    if (socket.user?.role === 'admin' && String(socket.user._id) !== String(ownerUserId)) {
+      socket.emit(event, payload);
+    }
+  });
+};
+
 const registerTaskSockets = (io) => {
   io.use(async (socket, next) => {
     try {
@@ -21,7 +32,7 @@ const registerTaskSockets = (io) => {
 
   io.on('connection', (socket) => {
     const userId = String(socket.user._id);
-    console.log(`Client connected: ${socket.id} (user: ${userId})`);
+    console.log(`Client connected: ${socket.id} (user: ${userId}, role: ${socket.user.role})`);
 
     socket.join(`user:${userId}`);
     socket.on('task:create', async (taskData) => {
@@ -32,7 +43,7 @@ const registerTaskSockets = (io) => {
           status: taskData.status,
           createdBy: socket.user._id,
         });
-        io.emit('task:create', task);
+        emitToOwnerAndAdmins(io, 'task:create', task, task.createdBy._id ?? task.createdBy);
       } catch (err) {
         socket.emit('task:error', { message: err.message });
       }
@@ -40,8 +51,8 @@ const registerTaskSockets = (io) => {
 
     socket.on('task:update', async ({ taskId, updateData, updatedAt }) => {
       try {
-        const updatedTask = await TaskService.updateTask(taskId, updateData, updatedAt);
-        io.emit('task:update', updatedTask);
+        const task = await TaskService.updateTask(taskId, updateData, updatedAt);
+        emitToOwnerAndAdmins(io, 'task:update', task, task.createdBy._id ?? task.createdBy);
       } catch (err) {
         if (err.isConflict) {
           socket.emit('task:conflict', { message: err.message, currentTask: err.currentTask });
@@ -54,7 +65,7 @@ const registerTaskSockets = (io) => {
     socket.on('task:delete', async ({ taskId }) => {
       try {
         const task = await TaskService.deleteTask(taskId);
-        io.emit('task:delete', { id: task._id });
+        emitToOwnerAndAdmins(io, 'task:delete', { id: task._id }, task.createdBy);
       } catch (err) {
         socket.emit('task:error', { message: err.message });
       }
@@ -62,8 +73,8 @@ const registerTaskSockets = (io) => {
 
     socket.on('task:move', async ({ taskId, newStatus, updatedAt }) => {
       try {
-        const updatedTask = await TaskService.moveTask(taskId, newStatus, updatedAt);
-        io.emit('task:move', updatedTask);
+        const task = await TaskService.moveTask(taskId, newStatus, updatedAt);
+        emitToOwnerAndAdmins(io, 'task:move', task, task.createdBy._id ?? task.createdBy);
       } catch (err) {
         if (err.isConflict) {
           socket.emit('task:conflict', { message: err.message, currentTask: err.currentTask });
