@@ -41,6 +41,7 @@ const registerTaskSockets = (io) => {
           title: taskData.title,
           description: taskData.description,
           status: taskData.status,
+          priority: taskData.priority,
           createdBy: socket.user._id,
         });
         emitToOwnerAndAdmins(io, 'task:create', task, task.createdBy._id ?? task.createdBy);

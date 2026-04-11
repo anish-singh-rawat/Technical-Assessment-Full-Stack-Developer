@@ -16,31 +16,35 @@ export const TASK_STATUS_LIST = [
   TASK_STATUS.DONE,
 ];
 
+export const TASK_PRIORITY = {
+  LOW: 'low',
+  MEDIUM: 'medium',
+  HIGH: 'high',
+};
+
+export const TASK_PRIORITY_LIST = [
+  TASK_PRIORITY.HIGH,
+  TASK_PRIORITY.MEDIUM,
+  TASK_PRIORITY.LOW,
+];
+
 export const COLUMN_CONFIG = {
   [TASK_STATUS.TODO]: {
     label: 'Todo',
-    color: 'gray',
-    headerClass: 'border-gray-600',
-    dotClass: 'bg-gray-400',
-    badgeClass: 'bg-gray-700/60 text-gray-300',
+    dotColor: '#64748b',
   },
   [TASK_STATUS.IN_PROGRESS]: {
     label: 'In Progress',
-    color: 'amber',
-    headerClass: 'border-amber-500',
-    dotClass: 'bg-amber-400',
-    badgeClass: 'bg-amber-500/20 text-amber-300',
+    dotColor: '#f59e0b',
   },
   [TASK_STATUS.DONE]: {
     label: 'Done',
-    color: 'emerald',
-    headerClass: 'border-emerald-500',
-    dotClass: 'bg-emerald-400',
-    badgeClass: 'bg-emerald-500/20 text-emerald-300',
+    dotColor: '#10b981',
   },
 };
 
 export const DEBOUNCE_DELAY = 300;
+export const PAGE_SIZE = 10;
 
 export const LOCAL_STORAGE_KEYS = {
   TOKEN: 'taskboard_token',

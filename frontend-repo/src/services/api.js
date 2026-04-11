@@ -110,4 +110,8 @@ export const taskApi = {
   delete: (id) => api.delete(`/tasks/${id}`),
 };
 
+export const adminApi = {
+  getUsers: () => api.get('/admin/users'),
+};
+
 export default api;
