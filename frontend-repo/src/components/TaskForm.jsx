@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TASK_STATUS_LIST } from '../utils/constants';
+import { TASK_STATUS_LIST, TASK_PRIORITY_LIST } from '../utils/constants';
 import '../App.css';
 
 export default function TaskForm({ initial = {}, onSubmit, onClose, loading }) {
@@ -7,6 +7,7 @@ export default function TaskForm({ initial = {}, onSubmit, onClose, loading }) {
     title: initial.title || '',
     description: initial.description || '',
     status: initial.status || 'todo',
+    priority: initial.priority || 'medium',
   });
 
   const handle = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
@@ -25,15 +26,25 @@ export default function TaskForm({ initial = {}, onSubmit, onClose, loading }) {
       </div>
       <div className="form-group">
         <label>Description</label>
-        <textarea name="description" value={form.description} onChange={handle} />
+        <textarea name="description" value={form.description} onChange={handle} rows={3} />
       </div>
-      <div className="form-group">
-        <label>Status</label>
-        <select name="status" value={form.status} onChange={handle}>
-          {TASK_STATUS_LIST.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
+      <div className="form-row">
+        <div className="form-group">
+          <label>Status</label>
+          <select name="status" value={form.status} onChange={handle}>
+            {TASK_STATUS_LIST.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        </div>
+        <div className="form-group">
+          <label>Priority</label>
+          <select name="priority" value={form.priority} onChange={handle}>
+            {TASK_PRIORITY_LIST.map((p) => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
+        </div>
       </div>
       <div className="modal-actions">
         <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>Cancel</button>

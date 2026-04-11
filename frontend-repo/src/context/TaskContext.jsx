@@ -9,13 +9,15 @@ import {
 import { taskApi } from '../services/api';
 import { useSocket } from '../hooks/useSocket';
 import { useAuth } from './AuthContext';
+import { PAGE_SIZE } from '../utils/constants';
 import toast from 'react-hot-toast';
 
 const TaskContext = createContext(null);
 
 export const TaskProvider = ({ children }) => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [tasks, setTasks] = useState([]);
+  const [pagination, setPagination] = useState({ total: 0, page: 1, limit: PAGE_SIZE, totalPages: 1 });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -27,14 +29,10 @@ export const TaskProvider = ({ children }) => {
       });
     },
     'task:update': (updatedTask) => {
-      setTasks((prev) =>
-        prev.map((t) => (t._id === updatedTask._id ? updatedTask : t))
-      );
+      setTasks((prev) => prev.map((t) => (t._id === updatedTask._id ? updatedTask : t)));
     },
     'task:move': (updatedTask) => {
-      setTasks((prev) =>
-        prev.map((t) => (t._id === updatedTask._id ? updatedTask : t))
-      );
+      setTasks((prev) => prev.map((t) => (t._id === updatedTask._id ? updatedTask : t)));
     },
     'task:delete': ({ id }) => {
       setTasks((prev) => prev.filter((t) => String(t._id) !== String(id)));
@@ -42,9 +40,7 @@ export const TaskProvider = ({ children }) => {
     'task:conflict': ({ message, currentTask }) => {
       toast.error(`⚠️ ${message}`);
       if (currentTask) {
-        setTasks((prev) =>
-          prev.map((t) => (t._id === currentTask._id ? currentTask : t))
-        );
+        setTasks((prev) => prev.map((t) => (t._id === currentTask._id ? currentTask : t)));
       }
     },
     'task:error': ({ message }) => {
@@ -59,8 +55,9 @@ export const TaskProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await taskApi.getAll(filters);
+      const { data } = await taskApi.getAll({ limit: PAGE_SIZE, ...filters });
       setTasks(data.data.tasks);
+      setPagination(data.data.pagination);
     } catch (err) {
       const msg = err.response?.data?.message || 'Failed to fetch tasks';
       setError(msg);
@@ -85,8 +82,7 @@ export const TaskProvider = ({ children }) => {
       toast.success('Task created!');
       return newTask;
     } catch (err) {
-      const msg = err.response?.data?.message || 'Failed to create task';
-      toast.error(msg);
+      toast.error(err.response?.data?.message || 'Failed to create task');
       throw err;
     }
   }, []);
@@ -99,10 +95,7 @@ export const TaskProvider = ({ children }) => {
     setTasks((prev) => prev.map((t) => (t._id === id ? optimistic : t)));
 
     try {
-      const { data } = await taskApi.update(id, {
-        ...updateData,
-        updatedAt: existing.updatedAt,
-      });
+      const { data } = await taskApi.update(id, { ...updateData, updatedAt: existing.updatedAt });
       const updated = data.data.task;
       setTasks((prev) => prev.map((t) => (t._id === id ? updated : t)));
       toast.success('Task updated!');
@@ -123,16 +116,11 @@ export const TaskProvider = ({ children }) => {
     if (!existing || existing.status === newStatus) return;
 
     setTasks((prev) =>
-      prev.map((t) =>
-        t._id === id ? { ...t, status: newStatus, updatedAt: new Date().toISOString() } : t
-      )
+      prev.map((t) => t._id === id ? { ...t, status: newStatus, updatedAt: new Date().toISOString() } : t)
     );
 
     try {
-      const { data } = await taskApi.update(id, {
-        status: newStatus,
-        updatedAt: existing.updatedAt,
-      });
+      const { data } = await taskApi.update(id, { status: newStatus, updatedAt: existing.updatedAt });
       const updated = data.data.task;
       setTasks((prev) => prev.map((t) => (t._id === id ? updated : t)));
     } catch (err) {
@@ -147,32 +135,24 @@ export const TaskProvider = ({ children }) => {
 
   const deleteTask = useCallback(async (id) => {
     const existing = tasks.find((t) => t._id === id);
-
     setTasks((prev) => prev.filter((t) => t._id !== id));
-
     try {
       await taskApi.delete(id);
       toast.success('Task deleted');
     } catch (err) {
-      if (existing) {
-        setTasks((prev) => [...prev, existing]);
-      }
+      if (existing) setTasks((prev) => [...prev, existing]);
       toast.error(err.response?.data?.message || 'Failed to delete task');
     }
   }, [tasks]);
 
-  const value = {
-    tasks,
-    loading,
-    error,
-    fetchTasks,
-    createTask,
-    updateTask,
-    moveTask,
-    deleteTask,
-  };
-
-  return <TaskContext.Provider value={value}>{children}</TaskContext.Provider>;
+  return (
+    <TaskContext.Provider value={{
+      tasks, pagination, loading, error,
+      fetchTasks, createTask, updateTask, moveTask, deleteTask,
+    }}>
+      {children}
+    </TaskContext.Provider>
+  );
 };
 
 export const useTasks = () => {
