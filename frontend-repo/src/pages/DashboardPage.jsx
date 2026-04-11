@@ -101,7 +101,7 @@ export default function DashboardPage() {
       <Navbar />
       <div className="dashboard">
         <div className="dashboard-header">
-          <h2>Tasks {isAdmin && <span className="role-badge admin" style={{ marginLeft: 8 }}>Admin</span>}</h2>
+          <h2>All The Tasks {isAdmin && <span className="role-badge admin" style={{ marginLeft: 8 }}>Admin</span>}</h2>
           <button className="btn btn-primary btn-sm" style={{ width: 'auto' }} onClick={() => setModal({ mode: 'create' })}>
             + New task
           </button>

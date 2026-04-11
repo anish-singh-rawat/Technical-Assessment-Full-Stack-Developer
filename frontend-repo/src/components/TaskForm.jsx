@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { TASK_STATUS_LIST, TASK_PRIORITY_LIST } from '../utils/constants';
-import '../App.css';
 
 export default function TaskForm({ initial = {}, onSubmit, onClose, loading }) {
   const [form, setForm] = useState({
@@ -22,11 +21,11 @@ export default function TaskForm({ initial = {}, onSubmit, onClose, loading }) {
     <form onSubmit={submit}>
       <div className="form-group">
         <label>Title</label>
-        <input name="title" value={form.title} onChange={handle} required autoFocus />
+        <input name="title" value={form.title} onChange={handle} required autoFocus placeholder="Task title..." />
       </div>
       <div className="form-group">
         <label>Description</label>
-        <textarea name="description" value={form.description} onChange={handle} rows={3} />
+        <textarea name="description" value={form.description} onChange={handle} placeholder="Optional description..." rows={3} />
       </div>
       <div className="form-row">
         <div className="form-group">
@@ -49,7 +48,7 @@ export default function TaskForm({ initial = {}, onSubmit, onClose, loading }) {
       <div className="modal-actions">
         <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>Cancel</button>
         <button type="submit" className="btn btn-primary btn-sm" style={{ width: 'auto' }} disabled={loading}>
-          {loading ? 'Saving...' : 'Save'}
+          {loading ? 'Saving...' : 'Save Task'}
         </button>
       </div>
     </form>

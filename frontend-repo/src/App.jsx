@@ -31,14 +31,15 @@ export default function App() {
             toastOptions={{
               duration: 3500,
               style: {
-                background: '#1a1d2e',
-                color: '#e2e8f0',
-                border: '1px solid #2d3148',
+                background: '#fff',
+                color: '#1A1A2E',
+                border: '1px solid #DDE3EA',
                 borderRadius: '8px',
                 fontSize: '13px',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
               },
-              success: { iconTheme: { primary: '#10b981', secondary: '#1a1d2e' } },
-              error: { iconTheme: { primary: '#ef4444', secondary: '#1a1d2e' } },
+              success: { iconTheme: { primary: '#16A34A', secondary: '#fff' } },
+              error:   { iconTheme: { primary: '#C53030', secondary: '#fff' } },
             }}
           />
         </TaskProvider>
