@@ -21,23 +21,17 @@ export const TaskProvider = ({ children }) => {
 
   const socketHandlers = useMemo(() => ({
     'task:create': (newTask) => {
-      const creatorId = typeof newTask.createdBy === 'string' ? newTask.createdBy : newTask.createdBy?._id;
-      if (creatorId !== user?.id) return;
       setTasks((prev) => {
         if (prev.some((t) => t._id === newTask._id)) return prev;
         return [newTask, ...prev];
       });
     },
     'task:update': (updatedTask) => {
-      const creatorId = typeof updatedTask.createdBy === 'string' ? updatedTask.createdBy : updatedTask.createdBy?._id;
-      if (creatorId !== user?.id) return;
       setTasks((prev) =>
         prev.map((t) => (t._id === updatedTask._id ? updatedTask : t))
       );
     },
     'task:move': (updatedTask) => {
-      const creatorId = typeof updatedTask.createdBy === 'string' ? updatedTask.createdBy : updatedTask.createdBy?._id;
-      if (creatorId !== user?.id) return;
       setTasks((prev) =>
         prev.map((t) => (t._id === updatedTask._id ? updatedTask : t))
       );
@@ -56,7 +50,7 @@ export const TaskProvider = ({ children }) => {
     'task:error': ({ message }) => {
       toast.error(message);
     },
-  }), [user?.id]);
+  }), []);
 
   const { emit } = useSocket(isAuthenticated ? socketHandlers : {});
 

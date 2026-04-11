@@ -19,10 +19,11 @@ export const AuthProvider = ({ children }) => {
   );
   const [loading, setLoading] = useState(true);
 
-  const setAuth = useCallback(({ token, user }) => {
-    setToken(token);
+  const setAuth = useCallback(({ accessToken, refreshToken, user }) => {
+    setToken(accessToken);
     setUser(user);
-    localStorage.setItem(LOCAL_STORAGE_KEYS.TOKEN, token);
+    localStorage.setItem(LOCAL_STORAGE_KEYS.TOKEN, accessToken);
+    localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
     localStorage.setItem(LOCAL_STORAGE_KEYS.USER, JSON.stringify(user));
   }, []);
 
@@ -30,6 +31,7 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     setUser(null);
     localStorage.removeItem(LOCAL_STORAGE_KEYS.TOKEN);
+    localStorage.removeItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);
     localStorage.removeItem(LOCAL_STORAGE_KEYS.USER);
   }, []);
 
@@ -58,7 +60,7 @@ export const AuthProvider = ({ children }) => {
       }
     };
     validateToken();
-  }, []); 
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const register = useCallback(async ({ name, email, password, role }) => {
     const { data } = await authApi.register({ name, email, password, role });
