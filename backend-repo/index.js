@@ -68,6 +68,13 @@ app.set('io', io);
 
 registerTaskSockets(io);
 
+io.on('connection', (socket) => {
+  console.log(`[Socket.IO] Client connected: ${socket.id}`);
+  socket.on('disconnect', (reason) => {
+    console.log(`[Socket.IO] Client disconnected: ${socket.id} — ${reason}`);
+  });
+});
+
 app.get('/', (_req, res) => {
   res.json({ message: `Server running on port ${process.env.PORT || 8080}`, success: true });
 });
@@ -89,6 +96,7 @@ app.use((err, _req, res, _next) => {
 connectDB().then(() => {
   httpServer.listen(process.env.PORT || 8080, () => {
     console.log(`Server running → http://localhost:${process.env.PORT || 8080}`);
+    console.log(`Socket.io Listening on ws://localhost:${process.env.PORT || 8080}`);
   });
 }).catch((err) => {
   console.error('DB connection failed:', err);

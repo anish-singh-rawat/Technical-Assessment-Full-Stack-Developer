@@ -1,15 +1,6 @@
 import TaskService from '../services/task.service.js';
 import ApiResponse from '../../utils/apiResponse.js';
-
-const emitToOwnerAndAdmins = (io, event, payload, ownerUserId) => {
-  if (!io) return;
-  io.to(`user:${String(ownerUserId)}`).emit(event, payload);
-  io.sockets.sockets.forEach((socket) => {
-    if (socket.user?.role === 'admin' && String(socket.user._id) !== String(ownerUserId)) {
-      socket.emit(event, payload);
-    }
-  });
-};
+import { emitToOwnerAndAdmins } from '../../sockets/task.socket.js';
 
 export const getAllTasks = async (req, res, next) => {
   try {
@@ -50,8 +41,7 @@ export const createTask = async (req, res, next) => {
       createdBy: req.user._id,
     });
 
-    const io = req.app.get('io');
-    emitToOwnerAndAdmins(io, 'task:create', task, task.createdBy._id ?? task.createdBy);
+    emitToOwnerAndAdmins(req.app.get('io'), 'task:create', task, task.createdBy._id ?? task.createdBy);
 
     return ApiResponse.created(res, { task }, 'Task created');
   } catch (err) {
@@ -66,8 +56,7 @@ export const updateTask = async (req, res, next) => {
 
     const task = await TaskService.updateTask(id, { title, description, status, priority, order }, updatedAt);
 
-    const io = req.app.get('io');
-    emitToOwnerAndAdmins(io, 'task:update', task, task.createdBy._id ?? task.createdBy);
+    emitToOwnerAndAdmins(req.app.get('io'), 'task:update', task, task.createdBy._id ?? task.createdBy);
 
     return ApiResponse.success(res, { task }, 'Task updated');
   } catch (err) {
@@ -81,8 +70,7 @@ export const deleteTask = async (req, res, next) => {
     const { id } = req.params;
     const task = await TaskService.deleteTask(id);
 
-    const io = req.app.get('io');
-    emitToOwnerAndAdmins(io, 'task:delete', { id: task._id }, task.createdBy);
+    emitToOwnerAndAdmins(req.app.get('io'), 'task:delete', { id: task._id }, task.createdBy);
 
     return ApiResponse.success(res, { id: task._id }, 'Task deleted');
   } catch (err) {

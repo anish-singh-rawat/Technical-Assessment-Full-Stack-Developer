@@ -2,15 +2,11 @@ import jwt from 'jsonwebtoken';
 import User from '../models/user.model.js';
 import TaskService from '../core/services/task.service.js';
 
-
-const emitToOwnerAndAdmins = (io, event, payload, ownerUserId) => {
+export const emitToOwnerAndAdmins = (io, event, payload, ownerUserId) => {
+  if (!io) return;
   const ownerRoom = `user:${String(ownerUserId)}`;
   io.to(ownerRoom).emit(event, payload);
-  io.sockets.sockets.forEach((socket) => {
-    if (socket.user?.role === 'admin' && String(socket.user._id) !== String(ownerUserId)) {
-      socket.emit(event, payload);
-    }
-  });
+  io.to('admins').emit(event, payload);
 };
 
 const registerTaskSockets = (io) => {
@@ -32,9 +28,16 @@ const registerTaskSockets = (io) => {
 
   io.on('connection', (socket) => {
     const userId = String(socket.user._id);
-    console.log(`Client connected: ${socket.id} (user: ${userId}, role: ${socket.user.role})`);
+    const role = socket.user.role;
+    console.log(`Client connected: ${socket.id} (user: ${userId}, role: ${role})`);
 
     socket.join(`user:${userId}`);
+
+    if (role === 'admin') {
+      socket.join('admins');
+      console.log(`Admin ${userId} joined 'admins' room`);
+    }
+
     socket.on('task:create', async (taskData) => {
       try {
         const task = await TaskService.createTask({

@@ -4,6 +4,7 @@ import {
   useState,
   useCallback,
   useEffect,
+  useRef,
   useMemo,
 } from 'react';
 import { taskApi } from '../services/api';
@@ -15,30 +16,43 @@ import toast from 'react-hot-toast';
 const TaskContext = createContext(null);
 
 export const TaskProvider = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [pagination, setPagination] = useState({ total: 0, page: 1, limit: PAGE_SIZE, totalPages: 1 });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const activeFiltersRef = useRef({});
+  const taskMatchesFilters = useCallback((task) => {
+    const { filterUserId } = activeFiltersRef.current;
+    if (!filterUserId) return true;
+    const creatorId = typeof task.createdBy === 'string'
+      ? task.createdBy
+      : task.createdBy?._id;
+    return String(creatorId) === String(filterUserId);
+  }, []);
+
   const socketHandlers = useMemo(() => ({
     'task:create': (newTask) => {
+      if (!taskMatchesFilters(newTask)) return;
       setTasks((prev) => {
         if (prev.some((t) => t._id === newTask._id)) return prev;
         return [newTask, ...prev];
       });
     },
     'task:update': (updatedTask) => {
+      if (!taskMatchesFilters(updatedTask)) return;
       setTasks((prev) => prev.map((t) => (t._id === updatedTask._id ? updatedTask : t)));
     },
     'task:move': (updatedTask) => {
+      if (!taskMatchesFilters(updatedTask)) return;
       setTasks((prev) => prev.map((t) => (t._id === updatedTask._id ? updatedTask : t)));
     },
     'task:delete': ({ id }) => {
       setTasks((prev) => prev.filter((t) => String(t._id) !== String(id)));
     },
     'task:conflict': ({ message, currentTask }) => {
-      toast.error(`⚠️ ${message}`);
+      toast.error(`Conflict: ${message}`);
       if (currentTask) {
         setTasks((prev) => prev.map((t) => (t._id === currentTask._id ? currentTask : t)));
       }
@@ -46,12 +60,13 @@ export const TaskProvider = ({ children }) => {
     'task:error': ({ message }) => {
       toast.error(message);
     },
-  }), []);
+  }), [taskMatchesFilters]);
 
   const { emit } = useSocket(isAuthenticated ? socketHandlers : {});
 
   const fetchTasks = useCallback(async (filters = {}) => {
     if (!isAuthenticated) return;
+    activeFiltersRef.current = filters;
     setLoading(true);
     setError(null);
     try {
@@ -103,7 +118,7 @@ export const TaskProvider = ({ children }) => {
     } catch (err) {
       setTasks((prev) => prev.map((t) => (t._id === id ? existing : t)));
       if (err.response?.status === 409) {
-        toast.error('⚠️ Update conflict — task was modified by another user');
+        toast.error('Update conflict — task was modified by another user');
       } else {
         toast.error(err.response?.data?.message || 'Failed to update task');
       }
@@ -126,7 +141,7 @@ export const TaskProvider = ({ children }) => {
     } catch (err) {
       setTasks((prev) => prev.map((t) => (t._id === id ? existing : t)));
       if (err.response?.status === 409) {
-        toast.error('⚠️ Move conflict — task was modified by another user');
+        toast.error('Move conflict — task was modified by another user');
       } else {
         toast.error(err.response?.data?.message || 'Failed to move task');
       }
