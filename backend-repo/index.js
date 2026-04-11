@@ -34,6 +34,7 @@ const io = new Server(httpServer, {
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
+  'https://technical-assessment-full-stack-dev.vercel.app',
 ];
 
 app.use(cors({
