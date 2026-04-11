@@ -6,6 +6,7 @@ export const useSocket = (eventHandlers = {}) => {
   const socketRef = useRef(null);
   const handlersRef = useRef(eventHandlers);
 
+  // Keep handlers ref up to date without re-running the connection effect
   useEffect(() => {
     handlersRef.current = eventHandlers;
   });
@@ -13,7 +14,7 @@ export const useSocket = (eventHandlers = {}) => {
   useEffect(() => {
     const token = localStorage.getItem(LOCAL_STORAGE_KEYS.TOKEN);
 
-    socketRef.current = io(import.meta.env.VITE_SOCKET_URL, {
+    const socket = io(import.meta.env.VITE_SOCKET_URL, {
       auth: { token },
       transports: ['websocket', 'polling'],
       reconnection: true,
@@ -22,7 +23,7 @@ export const useSocket = (eventHandlers = {}) => {
       reconnectionDelayMax: 5000,
     });
 
-    const socket = socketRef.current;
+    socketRef.current = socket;
 
     socket.on('connect', () => {
       console.log('🔌 Socket connected:', socket.id);
@@ -36,22 +37,27 @@ export const useSocket = (eventHandlers = {}) => {
       console.warn('Socket connection error:', err.message);
     });
 
-    const registerHandlers = () => {
-      Object.entries(handlersRef.current).forEach(([event, handler]) => {
-        socket.on(event, handler);
-      });
-    };
+    // Register all event handlers
+    Object.entries(handlersRef.current).forEach(([event, handler]) => {
+      socket.on(event, handler);
+    });
 
-    registerHandlers();
+    // When the access token is refreshed, update the socket auth and reconnect
+    const handleTokenRefresh = () => {
+      const newToken = localStorage.getItem(LOCAL_STORAGE_KEYS.TOKEN);
+      socket.auth = { token: newToken };
+      socket.disconnect().connect();
+    };
+    window.addEventListener('auth:tokenRefreshed', handleTokenRefresh);
 
     return () => {
-      Object.keys(handlersRef.current).forEach((event) => {
-        socket.off(event);
-      });
+      window.removeEventListener('auth:tokenRefreshed', handleTokenRefresh);
+      Object.keys(handlersRef.current).forEach((event) => socket.off(event));
       socket.disconnect();
     };
-  }, []); 
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Re-register handlers when they change (e.g. user context changes)
   useEffect(() => {
     if (!socketRef.current) return;
     const socket = socketRef.current;

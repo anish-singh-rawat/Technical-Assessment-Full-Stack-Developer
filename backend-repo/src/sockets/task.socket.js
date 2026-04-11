@@ -1,12 +1,38 @@
+import jwt from 'jsonwebtoken';
+import User from '../models/user.model.js';
 import TaskService from '../core/services/task.service.js';
 
 const registerTaskSockets = (io) => {
-  io.on('connection', (socket) => {
-    console.log(`Client connected: ${socket.id}`);
+  io.use(async (socket, next) => {
+    try {
+      const token = socket.handshake.auth?.token;
+      if (!token) return next(new Error('Authentication required'));
 
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await User.findById(decoded.id).select('_id name email role');
+      if (!user) return next(new Error('User not found'));
+
+      socket.user = user;
+      next();
+    } catch {
+      next(new Error('Invalid or expired token'));
+    }
+  });
+
+  io.on('connection', (socket) => {
+    const userId = String(socket.user._id);
+    console.log(`Client connected: ${socket.id} (user: ${userId})`);
+
+    socket.join(`user:${userId}`);
     socket.on('task:create', async (taskData) => {
       try {
-        socket.broadcast.emit('task:create', taskData);
+        const task = await TaskService.createTask({
+          title: taskData.title,
+          description: taskData.description,
+          status: taskData.status,
+          createdBy: socket.user._id,
+        });
+        io.emit('task:create', task);
       } catch (err) {
         socket.emit('task:error', { message: err.message });
       }
@@ -18,10 +44,7 @@ const registerTaskSockets = (io) => {
         io.emit('task:update', updatedTask);
       } catch (err) {
         if (err.isConflict) {
-          socket.emit('task:conflict', {
-            message: err.message,
-            currentTask: err.currentTask,
-          });
+          socket.emit('task:conflict', { message: err.message, currentTask: err.currentTask });
         } else {
           socket.emit('task:error', { message: err.message });
         }
@@ -43,10 +66,7 @@ const registerTaskSockets = (io) => {
         io.emit('task:move', updatedTask);
       } catch (err) {
         if (err.isConflict) {
-          socket.emit('task:conflict', {
-            message: err.message,
-            currentTask: err.currentTask,
-          });
+          socket.emit('task:conflict', { message: err.message, currentTask: err.currentTask });
         } else {
           socket.emit('task:error', { message: err.message });
         }

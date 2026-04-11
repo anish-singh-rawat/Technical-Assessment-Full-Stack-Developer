@@ -44,5 +44,6 @@ export const DEBOUNCE_DELAY = 300;
 
 export const LOCAL_STORAGE_KEYS = {
   TOKEN: 'taskboard_token',
+  REFRESH_TOKEN: 'taskboard_refresh_token',
   USER: 'taskboard_user',
 };
