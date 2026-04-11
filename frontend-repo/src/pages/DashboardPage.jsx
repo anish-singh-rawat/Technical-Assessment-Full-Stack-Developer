@@ -12,7 +12,7 @@ import '../App.css';
 
 export default function DashboardPage() {
   const { tasks, pagination, loading, createTask, updateTask, deleteTask, moveTask, fetchTasks } = useTasks();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const isAdmin = user?.role === 'admin';
 
   const [modal, setModal] = useState(null);
@@ -35,7 +35,7 @@ export default function DashboardPage() {
     if (!isAdmin) return;
     adminApi.getUsers()
       .then(({ data }) => setCustomers(data.data.users))
-      .catch(() => {});
+      .catch(() => { });
   }, [isAdmin]);
 
   useEffect(() => {
@@ -105,7 +105,10 @@ export default function DashboardPage() {
           <div className="topbar-right">
             <span className="topbar-user">{user?.name}</span>
             <span className={`topbar-role ${user?.role}`}>{user?.role}</span>
-            <button className="topbar-icon-btn" title="Notifications">🔔</button>
+            <button className="sidebar-logout" onClick={logout}>
+              <span>⏻</span>
+              LogOut
+            </button>
           </div>
         </div>
 

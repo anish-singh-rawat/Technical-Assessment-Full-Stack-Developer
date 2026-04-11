@@ -31,7 +31,6 @@ export default function Navbar() {
           <span>⏻</span>
           LogOut
         </button>
-        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Help</span>
       </div>
     </aside>
   );

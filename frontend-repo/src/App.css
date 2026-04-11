@@ -246,7 +246,6 @@ a { text-decoration: none; color: var(--orange); }
 .btn-outline {
   background: #fff;
   color: var(--orange);
-  border: 1.5px solid var(--orange);
 }
 .btn-outline:hover:not(:disabled) { background: var(--orange-light); }
 
@@ -415,7 +414,6 @@ a { text-decoration: none; color: var(--orange); }
 
 .column {
   background: var(--card-bg);
-  border: 1.5px solid var(--blue-border);
   border-radius: var(--radius);
   padding: 12px;
   min-height: 220px;
@@ -428,7 +426,6 @@ a { text-decoration: none; color: var(--orange); }
   justify-content: space-between;
   margin-bottom: 10px;
   padding-bottom: 10px;
-  border-bottom: 1.5px solid var(--blue-border);
 }
 
 .column-title {
