@@ -35,6 +35,16 @@ export const login = async (req, res, next) => {
   }
 };
 
+export const refreshToken = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+    const result = await AuthService.refreshTokens(refreshToken);
+    return ApiResponse.success(res, result, 'Token refreshed');
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const getMe = async (req, res) => {
   const { _id, name, email, role, createdAt } = req.user;
   return ApiResponse.success(res, { user: { id: _id, name, email, role, createdAt } }, 'Profile fetched');

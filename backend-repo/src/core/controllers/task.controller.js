@@ -4,7 +4,7 @@ import ApiResponse from '../../utils/apiResponse.js';
 export const getAllTasks = async (req, res, next) => {
   try {
     const { search, status } = req.query;
-    const tasks = await TaskService.getAllTasks({ search, status, userId: req.user._id });
+    const tasks = await TaskService.getAllTasks({ search, status });
     return ApiResponse.success(res, { tasks }, 'Tasks fetched');
   } catch (err) {
     next(err);

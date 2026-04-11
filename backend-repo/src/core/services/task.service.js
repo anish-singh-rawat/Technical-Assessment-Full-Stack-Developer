@@ -1,18 +1,15 @@
 import Task from '../../models/task.model.js';
 import cache from '../../utils/cache.js';
 
-const CACHE_TTL = 120; 
-
-const taskCacheKey = (userId, search = '', status = '') => `tasks:${userId}:${status}:${search}`;
+const CACHE_TTL = 120;
 
 const TaskService = {
-  async getAllTasks({ search = '', status = '', userId } = {}) {
-    const key = taskCacheKey(userId, search, status);
+  async getAllTasks({ search = '', status = '' } = {}) {
+    const key = `tasks:all:${status}:${search}`;
     const cached = cache.get(key);
     if (cached) return cached;
 
     const query = {};
-    if (userId) query.createdBy = userId;
 
     if (status && ['todo', 'in-progress', 'done'].includes(status)) {
       query.status = status;
@@ -49,7 +46,7 @@ const TaskService = {
 
     await task.populate('createdBy', 'name email');
 
-    cache.delByPrefix(`tasks:${createdBy}`);
+    cache.delByPrefix(`tasks:all`);
     return task;
   },
 
@@ -83,7 +80,7 @@ const TaskService = {
     await existingTask.save();
     await existingTask.populate('createdBy', 'name email');
 
-    cache.delByPrefix(`tasks:${existingTask.createdBy._id}`);
+    cache.delByPrefix(`tasks:all`);
     return existingTask;
   },
 
@@ -102,7 +99,7 @@ const TaskService = {
 
     await Task.findByIdAndDelete(taskId);
 
-    cache.delByPrefix(`tasks:${task.createdBy}`);
+    cache.delByPrefix(`tasks:all`);
     return task;
   },
 
