@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 const TASK_STATUSES = ['todo', 'in-progress', 'done'];
+const TASK_PRIORITIES = ['low', 'medium', 'high'];
 
 const taskSchema = new mongoose.Schema(
   {
@@ -18,11 +19,13 @@ const taskSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: {
-        values: TASK_STATUSES,
-        message: 'Status must be one of: todo, in-progress, done',
-      },
+      enum: { values: TASK_STATUSES, message: 'Status must be one of: todo, in-progress, done' },
       default: 'todo',
+    },
+    priority: {
+      type: String,
+      enum: { values: TASK_PRIORITIES, message: 'Priority must be one of: low, medium, high' },
+      default: 'medium',
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -42,6 +45,7 @@ const taskSchema = new mongoose.Schema(
 );
 
 taskSchema.index({ status: 1, createdAt: -1 });
+taskSchema.index({ priority: 1, createdAt: -1 });
 taskSchema.index({ title: 'text', description: 'text' });
 
 const Task = mongoose.model('Task', taskSchema);

@@ -12,6 +12,7 @@ import morgan from 'morgan';
 import connectDB from './src/core/DB/connectDb.js';
 import authRoutes from './src/routes/auth.routes.js';
 import taskRoutes from './src/routes/task.routes.js';
+import adminRoutes from './src/routes/admin.routes.js';
 import registerTaskSockets from './src/sockets/task.socket.js';
 import { apiLimiter } from './src/core/middlewares/rateLimiter.js';
 
@@ -73,6 +74,7 @@ app.get('/', (_req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', apiLimiter, taskRoutes);
+app.use('/api/admin', apiLimiter, adminRoutes);
 
 app.use((err, _req, res, _next) => {
   console.error(err);

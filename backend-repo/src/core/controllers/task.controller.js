@@ -3,9 +3,7 @@ import ApiResponse from '../../utils/apiResponse.js';
 
 const emitToOwnerAndAdmins = (io, event, payload, ownerUserId) => {
   if (!io) return;
-  const ownerRoom = `user:${String(ownerUserId)}`;
-  io.to(ownerRoom).emit(event, payload);
-
+  io.to(`user:${String(ownerUserId)}`).emit(event, payload);
   io.sockets.sockets.forEach((socket) => {
     if (socket.user?.role === 'admin' && String(socket.user._id) !== String(ownerUserId)) {
       socket.emit(event, payload);
@@ -15,10 +13,22 @@ const emitToOwnerAndAdmins = (io, event, payload, ownerUserId) => {
 
 export const getAllTasks = async (req, res, next) => {
   try {
-    const { search, status } = req.query;
-    const userId = req.user.role === 'admin' ? undefined : req.user._id;
-    const tasks = await TaskService.getAllTasks({ search, status, userId });
-    return ApiResponse.success(res, { tasks }, 'Tasks fetched');
+    const { search, status, priority, sortBy, page, limit, filterUserId } = req.query;
+
+    const isAdmin = req.user.role === 'admin';
+
+    const result = await TaskService.getAllTasks({
+      search,
+      status,
+      priority,
+      sortBy,
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 10,
+      userId: isAdmin ? undefined : req.user._id,
+      filterUserId: isAdmin ? filterUserId : undefined,
+    });
+
+    return ApiResponse.success(res, result, 'Tasks fetched');
   } catch (err) {
     next(err);
   }
@@ -26,7 +36,7 @@ export const getAllTasks = async (req, res, next) => {
 
 export const createTask = async (req, res, next) => {
   try {
-    const { title, description, status } = req.body;
+    const { title, description, status, priority } = req.body;
 
     if (!title?.trim()) {
       return ApiResponse.badRequest(res, 'Task title is required');
@@ -36,6 +46,7 @@ export const createTask = async (req, res, next) => {
       title,
       description,
       status,
+      priority,
       createdBy: req.user._id,
     });
 
@@ -51,9 +62,9 @@ export const createTask = async (req, res, next) => {
 export const updateTask = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { title, description, status, order, updatedAt } = req.body;
+    const { title, description, status, priority, order, updatedAt } = req.body;
 
-    const task = await TaskService.updateTask(id, { title, description, status, order }, updatedAt);
+    const task = await TaskService.updateTask(id, { title, description, status, priority, order }, updatedAt);
 
     const io = req.app.get('io');
     emitToOwnerAndAdmins(io, 'task:update', task, task.createdBy._id ?? task.createdBy);
