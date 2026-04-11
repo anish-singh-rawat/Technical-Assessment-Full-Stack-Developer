@@ -2,8 +2,7 @@ import { useAuth } from '../context/AuthContext';
 import '../App.css';
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
-  const isAdmin = user?.role === 'admin';
+  const { logout } = useAuth();
 
   return (
     <aside className="sidebar">
@@ -18,12 +17,6 @@ export default function Navbar() {
           <span className="nav-icon">▦</span>
           Dashboard
         </div>
-        {isAdmin && (
-          <div className="nav-item">
-            <span className="nav-icon">👥</span>
-            All Customers
-          </div>
-        )}
       </nav>
 
       <div className="sidebar-footer">

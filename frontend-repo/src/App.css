@@ -716,7 +716,12 @@ a { text-decoration: none; color: var(--orange); }
   background: var(--body-bg);
 }
 
-.customer-list { max-height: 200px; overflow-y: auto; }
+.customer-list { max-height: 200px; overflow-y: scroll; }
+
+.customer-list::-webkit-scrollbar { width: 6px; }
+.customer-list::-webkit-scrollbar-track { background: var(--body-bg); border-radius: 4px; }
+.customer-list::-webkit-scrollbar-thumb { background: var(--orange); border-radius: 4px; }
+.customer-list::-webkit-scrollbar-thumb:hover { background: var(--orange-dark); }
 
 .customer-option {
   display: flex;
