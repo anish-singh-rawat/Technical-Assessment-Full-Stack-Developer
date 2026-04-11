@@ -6,7 +6,6 @@ export const useSocket = (eventHandlers = {}) => {
   const socketRef = useRef(null);
   const handlersRef = useRef(eventHandlers);
 
-  // Keep handlers ref up to date without re-running the connection effect
   useEffect(() => {
     handlersRef.current = eventHandlers;
   });
@@ -37,12 +36,10 @@ export const useSocket = (eventHandlers = {}) => {
       console.warn('Socket connection error:', err.message);
     });
 
-    // Register all event handlers
     Object.entries(handlersRef.current).forEach(([event, handler]) => {
       socket.on(event, handler);
     });
 
-    // When the access token is refreshed, update the socket auth and reconnect
     const handleTokenRefresh = () => {
       const newToken = localStorage.getItem(LOCAL_STORAGE_KEYS.TOKEN);
       socket.auth = { token: newToken };
@@ -55,9 +52,8 @@ export const useSocket = (eventHandlers = {}) => {
       Object.keys(handlersRef.current).forEach((event) => socket.off(event));
       socket.disconnect();
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Re-register handlers when they change (e.g. user context changes)
   useEffect(() => {
     if (!socketRef.current) return;
     const socket = socketRef.current;

@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
       }
     };
     validateToken();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); 
 
   const register = useCallback(async ({ name, email, password, role }) => {
     const { data } = await authApi.register({ name, email, password, role });

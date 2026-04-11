@@ -7,7 +7,6 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// ── Request interceptor: attach access token ──────────────────────────────────
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem(LOCAL_STORAGE_KEYS.TOKEN);
@@ -17,7 +16,6 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ── Response interceptor: auto-refresh on 401 ────────────────────────────────
 let isRefreshing = false;
 let failedQueue = [];
 
@@ -40,7 +38,6 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && !isAuthRoute && !originalRequest._retry) {
       if (isRefreshing) {
-        // Queue this request until the refresh completes
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
@@ -75,7 +72,6 @@ api.interceptors.response.use(
         api.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
 
-        // Notify socket to reconnect with the new token
         window.dispatchEvent(new Event('auth:tokenRefreshed'));
 
         processQueue(null, accessToken);

@@ -29,21 +29,24 @@ export default function RegisterPage() {
   return (
     <div className="auth-page">
       <div className="auth-box">
+        <div className="auth-logo">
+          <span className="auth-logo-text">Task<span>Board</span></span>
+        </div>
         <h1>Create account</h1>
-        <p>Get started</p>
+        <p>Get started — it's free</p>
         {error && <div className="error-msg">{error}</div>}
         <form onSubmit={submit}>
           <div className="form-group">
-            <label>Name</label>
-            <input name="name" value={form.name} onChange={handle} required />
+            <label>Full Name</label>
+            <input name="name" value={form.name} onChange={handle} required placeholder="John Doe" />
           </div>
           <div className="form-group">
             <label>Email</label>
-            <input name="email" type="email" value={form.email} onChange={handle} required />
+            <input name="email" type="email" value={form.email} onChange={handle} required placeholder="you@example.com" />
           </div>
           <div className="form-group">
             <label>Password</label>
-            <input name="password" type="password" value={form.password} onChange={handle} required minLength={6} />
+            <input name="password" type="password" value={form.password} onChange={handle} required minLength={6} placeholder="Min. 6 characters" />
           </div>
           <div className="form-group">
             <label>Role</label>

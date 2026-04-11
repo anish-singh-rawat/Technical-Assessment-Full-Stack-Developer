@@ -29,24 +29,27 @@ export default function LoginPage() {
   return (
     <div className="auth-page">
       <div className="auth-box">
+        <div className="auth-logo">
+          <span className="auth-logo-text">Task<span>Board</span></span>
+        </div>
         <h1>Sign in</h1>
-        <p>Welcome back</p>
+        <p>Welcome back — enter your credentials</p>
         {error && <div className="error-msg">{error}</div>}
         <form onSubmit={submit}>
           <div className="form-group">
             <label>Email</label>
-            <input name="email" type="email" value={form.email} onChange={handle} required />
+            <input name="email" type="email" value={form.email} onChange={handle} required placeholder="you@example.com" />
           </div>
           <div className="form-group">
             <label>Password</label>
-            <input name="password" type="password" value={form.password} onChange={handle} required />
+            <input name="password" type="password" value={form.password} onChange={handle} required placeholder="••••••••" />
           </div>
           <button className="btn btn-primary" type="submit" disabled={loading}>
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
         <div className="auth-footer">
-          No account? <Link to="/register">Register</Link>
+          No account? <Link to="/register">Register here</Link>
         </div>
       </div>
     </div>
